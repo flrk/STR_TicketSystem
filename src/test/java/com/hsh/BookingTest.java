@@ -4,33 +4,44 @@ package com.hsh;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BookingTest {
     private Customer customer;
+    private CulturalEvent culturalEvent;
     @BeforeEach
-    public void init(){
+    void init(){
         customer = new Customer("Hans Meier", "Zeppelinweg 7, 3049 Hannover");
+        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
     }
 
     @Test
-    public void shouldCreateBooking(){
-        Booking booking = new Booking(customer, 1, 2);
+    void shouldCreateBooking(){
+        Booking booking = new Booking(customer, culturalEvent, 2);
         assertNotNull(booking);
     }
 
     @Test
-    public void shouldRejectEventIdsLowerOne(){
-        assertThrows(IllegalArgumentException.class, () -> new Booking(customer, 0, 2));
+    void shouldRejectNullPointerForCulturalEvent(){
+        assertThrows(IllegalArgumentException.class, () -> new Booking(customer, null, 2));
     }
 
     @Test
-    public void shouldRejectBookedSeatsLowerOne(){
-        assertThrows(IllegalArgumentException.class, () -> new Booking(customer, 2, 0));
+    void shouldRejectBookedSeatsLowerOne(){
+        assertThrows(IllegalArgumentException.class, () -> new Booking(customer, culturalEvent, 0));
     }
 
     @Test
-    public void shouldRejectNullPointerForCustomer(){
-        assertThrows(IllegalArgumentException.class, () -> new Booking(null, 2, 2));
+    void shouldRejectNullPointerForCustomer(){
+        assertThrows(IllegalArgumentException.class, () -> new Booking(null, culturalEvent, 2));
+    }
+
+    @Test
+    void getBookedSeats(){
+        Booking booking = new Booking(customer, culturalEvent, 2);
+        assertEquals(2, booking.getBookedSeats());
     }
 }

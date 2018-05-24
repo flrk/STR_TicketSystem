@@ -12,19 +12,32 @@ public class CulturalEventTest {
     private CulturalEvent event;
 
     @BeforeEach
-    public void init(){
+    void init(){
         seats = 20_000;
         event = new CulturalEvent(1,"Metallica Konzert",LocalDateTime.of(2018, Month.MARCH, 28, 19, 30),98, seats);
     }
 
     @Test
-    public void shouldCreateFullCulturalEvent(){
+    void shouldCreateFullCulturalEvent(){
         assertNotNull(event);
     }
 
     @Test
-    public void shouldShowRemainingSeats(){
+    void shouldGetCulturalEventId(){
+        assertEquals(1,event.getEventID());
+    }
+
+    @Test
+    void shouldShowRemainingSeats(){
         int remainingSeats = event.getRemainingSeats();
         assertEquals(seats,remainingSeats);
     }
+
+    @Test
+    void shouldDecreaseRemainingSeats(){
+        event.decreaseRemainingSeats(2);
+        assertEquals(19_998, event.getRemainingSeats());
+    }
+
+
 }

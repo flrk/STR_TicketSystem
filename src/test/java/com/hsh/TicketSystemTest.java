@@ -16,29 +16,32 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TicketSystemTest {
 
     private TicketSystem system;
+    private CulturalEvent culturalEvent;
 
     @BeforeEach
-    public void init(){
+    void init(){
         system = new TicketSystem();
+        system.createNewCustomer("Hans Meier", "Zechenweg 7, 30499 Hannover");
+        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
     }
 
     @Test
-    public void shouldCreateNewTicketSystem(){
+    void shouldCreateNewTicketSystem(){
         assertNotNull(system);
     }
 
     @Test
-    public void shouldCreateNewCustomer(){
+    void shouldCreateNewCustomer(){
         system.createNewCustomer("Hans Meier", "Zechenweg 7, 30499 Hannover");
     }
 
     @Test
-    public void shouldCreateNewCulturalEvent(){
+    void shouldCreateNewCulturalEvent(){
         system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
     }
 
     @Test
-    public void shouldListAllCulturalEvents(){
+    void shouldListAllCulturalEvents(){
         LinkedList<CulturalEvent> listToCompare = new LinkedList<>();
         listToCompare.add(new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000));
         listToCompare.add(new CulturalEvent(2,"Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000));
@@ -52,12 +55,13 @@ public class TicketSystemTest {
     }
 
     @Test
-    public void shouldListAllCustomers(){
+    void shouldListAllCustomers(){
         LinkedList<Customer> listToCompare = new LinkedList<>();
-        listToCompare.add(new Customer("Hans Meier", "Blabal Str. 4, 99999 Nonsenshausen"));
+        listToCompare.add(new Customer("Hans Meier", "Zechenweg 7, 30499 Hannover"));
+        listToCompare.add(new Customer("Hans Mayer", "Blabal Str. 4, 99999 Nonsenshausen"));
         listToCompare.add(new Customer("Hans Müller", "TickTack Str. 4, 99999 Nonsenshausen"));
 
-        system.createNewCustomer("Hans Meier", "Blabal Str. 4, 99999 Nonsenshausen");
+        system.createNewCustomer("Hans Mayer", "Blabal Str. 4, 99999 Nonsenshausen");
         system.createNewCustomer("Hans Müller", "TickTack Str. 4, 99999 Nonsenshausen");
 
         List<Customer> customerList = system.listAllCustomers();
@@ -77,14 +81,22 @@ public class TicketSystemTest {
 
     @Test
     void shouldCreateNewBookingForStoredCustomer(){
-        system.createNewCustomer("Hans Meier", "Blalalalla");
-        system.createNewBookingForCustomer("Hans Meier", 1,2);
+        system.createNewBookingForCustomer("Hans Meier", culturalEvent,2);
     }
 
     @Test
     void shouldRejectCreationNewBookingForUnstoredCustomer() {
-        system.createNewCustomer("Hans Meier", "Blalalalla");
-        assertThrows(NoSuchElementException.class, () -> system.createNewBookingForCustomer("Hans Müller", 1, 2));
+        assertThrows(NoSuchElementException.class, () -> system.createNewBookingForCustomer("Hans Müller", culturalEvent, 2));
+    }
+
+    @Test
+    void shouldMergeBookingForSameCulturalEventAndCustomer(){
+        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        system.createNewBookingForCustomer("Hans Meier",culturalEvent,2);
+        system.createNewBookingForCustomer("Hans Meier", culturalEvent, 2);
+        Booking storedBooking = system.getBooking("Hans Meier", culturalEvent);
+        assertEquals(4, storedBooking.getBookedSeats());
+
     }
 
 }

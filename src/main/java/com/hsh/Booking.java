@@ -2,21 +2,21 @@ package com.hsh;
 
 public class Booking {
     private Customer customer;
-    private int eventID;
+    private CulturalEvent culturalEvent;
     private int bookedSeats;
 
 
-    public Booking(Customer customer, int eventID, int bookedSeats){
+    public Booking(Customer customer, CulturalEvent culturalEvent, int bookedSeats){
         setCustomer(customer);
-        setEventID(eventID);
+        setCulturalEvent(culturalEvent);
         setBookedSeats(bookedSeats);
     }
 
-    private void setEventID(int eventID){
-        if(eventID < 1){
+    private void setCulturalEvent(CulturalEvent culturalEvent){
+        if(culturalEvent == null){
             throw new IllegalArgumentException();
         }
-        this.eventID = eventID;
+        this.culturalEvent = culturalEvent;
     }
 
     private void setBookedSeats(int bookedSeats){
@@ -31,5 +31,9 @@ public class Booking {
             throw new IllegalArgumentException();
         }
         this.customer = customer;
+    }
+
+    int getBookedSeats(){
+        return bookedSeats;
     }
 }

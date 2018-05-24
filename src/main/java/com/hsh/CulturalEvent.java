@@ -22,6 +22,14 @@ public class CulturalEvent {
         this.remainingSeats = numberOfSeats;
     }
 
+    public int getEventID(){
+        return id;
+    }
+
+    public void decreaseRemainingSeats(int numberOfSeats){
+        remainingSeats -= numberOfSeats;
+    }
+
     public int getRemainingSeats(){
         return remainingSeats;
     }

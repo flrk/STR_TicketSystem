@@ -5,12 +5,14 @@ import java.util.*;
 
 public class TicketSystem {
     private final HashMap<Integer,CulturalEvent> culturalEventMap;
-    private final HashMap<String, Customer> customerMap;
+    private final HashMap<String,Customer> customerMap;
+    private final HashMap<String,Booking> bookingMap;
     private int culturalEventID;
 
     public TicketSystem(){
        culturalEventMap = new HashMap<>();
        customerMap = new HashMap<>();
+       bookingMap = new HashMap<>();
        culturalEventID = 0;
     }
 
@@ -33,13 +35,22 @@ public class TicketSystem {
         return culturalEventMap.get(id).getRemainingSeats();
     }
 
-    public void createNewBookingForCustomer(String name, int eventId, int bookedSeats){
+    public void createNewBookingForCustomer(String name, CulturalEvent culturalEvent, int bookedSeats){
         Customer requestedCustomer = customerMap.get(name);
-        if(requestedCustomer ==  null){
+        if(requestedCustomer == null){
             throw new NoSuchElementException();
         }
-        Booking booking = new Booking(requestedCustomer, eventId, bookedSeats);
 
+        int alreadyBookedSeats = 0;
+        if(bookingMap.containsKey(name+":"+culturalEvent.getEventID())){
+            alreadyBookedSeats = bookingMap.get(name+":"+culturalEvent.getEventID()).getBookedSeats();
+        }
+
+        bookingMap.put(name+":"+culturalEvent.getEventID(), new Booking(requestedCustomer, culturalEvent, bookedSeats+alreadyBookedSeats));
+    }
+
+    public Booking getBooking(String name, CulturalEvent culturalEvent){
+        return bookingMap.get(name+":"+culturalEvent.getEventID());
     }
 
     private int getCulturalEventID(){
