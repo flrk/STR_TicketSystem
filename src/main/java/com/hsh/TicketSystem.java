@@ -40,6 +40,11 @@ public class TicketSystem {
         if(requestedCustomer == null){
             throw new NoSuchElementException();
         }
+        if(culturalEvent.getRemainingSeats()< bookedSeats){
+            throw new IllegalArgumentException("Nicht genug freie Plätze");
+        }
+
+        culturalEvent.decreaseRemainingSeats(bookedSeats);
 
         int alreadyBookedSeats = 0;
         if(bookingMap.containsKey(name+":"+culturalEvent.getEventID())){

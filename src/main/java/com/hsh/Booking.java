@@ -1,5 +1,7 @@
 package com.hsh;
 
+import java.util.Objects;
+
 public class Booking {
     private Customer customer;
     private CulturalEvent culturalEvent;
@@ -26,11 +28,28 @@ public class Booking {
         this.bookedSeats = bookedSeats;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Booking booking = (Booking) o;
+        return bookedSeats == booking.bookedSeats &&
+                Objects.equals(customer, booking.customer) &&
+                Objects.equals(culturalEvent, booking.culturalEvent);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(customer, culturalEvent, bookedSeats);
+    }
+
     private void setCustomer(Customer customer){
         if(customer == null){
             throw new IllegalArgumentException();
         }
         this.customer = customer;
+
     }
 
     int getBookedSeats(){

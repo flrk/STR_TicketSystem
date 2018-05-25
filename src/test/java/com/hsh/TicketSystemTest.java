@@ -16,12 +16,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TicketSystemTest {
 
     private TicketSystem system;
+    private Customer customer;
     private CulturalEvent culturalEvent;
 
     @BeforeEach
     void init(){
         system = new TicketSystem();
+        customer = new Customer("Hans Meier", "Zechenweg 7, 30499 Hannover");
         system.createNewCustomer("Hans Meier", "Zechenweg 7, 30499 Hannover");
+        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
         culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
     }
 
@@ -46,7 +49,6 @@ public class TicketSystemTest {
         listToCompare.add(new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000));
         listToCompare.add(new CulturalEvent(2,"Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000));
 
-        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
         system.createNewCulturalEvent("Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000);
 
         List<CulturalEvent> culturalEventList = system.listAllCulturalEvents();
@@ -96,7 +98,19 @@ public class TicketSystemTest {
         system.createNewBookingForCustomer("Hans Meier", culturalEvent, 2);
         Booking storedBooking = system.getBooking("Hans Meier", culturalEvent);
         assertEquals(4, storedBooking.getBookedSeats());
+    }
 
+    @Test
+    void shouldReturnBookingForCustomerAndCulturalEvent(){
+        Booking booking = new Booking(customer,culturalEvent,2);
+        system.createNewBookingForCustomer("Hans Meier",culturalEvent,2);
+        assertEquals(booking, system.getBooking("Hans Meier",culturalEvent));
+    }
+
+    @Test
+    void shouldRejectBookingIfNotEnoughSeatsAvailable(){
+        system.createNewBookingForCustomer("Hans Meier",culturalEvent,19_000);
+        assertThrows(IllegalArgumentException.class, () -> system.createNewBookingForCustomer("Hans Meier", culturalEvent, 1_001));
     }
 
 }
