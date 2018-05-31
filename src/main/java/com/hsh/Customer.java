@@ -1,14 +1,19 @@
 package com.hsh;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Customer {
+public class Customer implements Serializable {
     private String name;
-    private String adress;
+    private String address;
 
     public Customer(String name, String address){
         setName(name);
         setAddress(address);
+    }
+
+    public String getName(){
+        return name;
     }
 
     private void setName(String name){
@@ -22,7 +27,7 @@ public class Customer {
         if(address == null || address.equals("")){
             throw new IllegalArgumentException();
         }
-        this.adress = address;
+        this.address = address;
     }
 
     @Override
@@ -31,12 +36,12 @@ public class Customer {
         if (o == null || getClass() != o.getClass()) return false;
         Customer customer = (Customer) o;
         return Objects.equals(name, customer.name) &&
-                Objects.equals(adress, customer.adress);
+                Objects.equals(address, customer.address);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(name, adress);
+        return Objects.hash(name, address);
     }
 }

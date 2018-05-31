@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -111,6 +112,49 @@ public class TicketSystemTest {
     void shouldRejectBookingIfNotEnoughSeatsAvailable(){
         system.createNewBookingForCustomer("Hans Meier",culturalEvent,19_000);
         assertThrows(IllegalArgumentException.class, () -> system.createNewBookingForCustomer("Hans Meier", culturalEvent, 1_001));
+    }
+
+    @Test
+    void shouldPersistAllContent(){
+        assertTrue(system.saveAllData());
+    }
+
+    @Test
+    void shouldLoadAllSavedData(){
+        system.createNewBookingForCustomer("Hans Meier",culturalEvent,2);
+        List<CulturalEvent> culturalEvents = system.listAllCulturalEvents();
+        List<Customer> customers = system.listAllCustomers();
+        List<Booking> bookings = new LinkedList<>();
+        for (Customer c: customers) {
+            for (CulturalEvent ce: culturalEvents) {
+                Booking b = system.getBooking(c.getName(),ce);
+                if (b != null && !bookings.contains(b)){
+                    bookings.add(b);
+
+                }
+            }
+        }
+
+        system.saveAllData();
+        system.eraseTemporaryData();
+        system.loadAllData();
+
+        List<CulturalEvent> newCulturalEvents = system.listAllCulturalEvents();
+        List<Customer> newCustomers = system.listAllCustomers();
+
+        List<Booking> newBookings = new LinkedList<>();
+        for (Customer c: newCustomers) {
+            for (CulturalEvent ce: newCulturalEvents) {
+                Booking b = system.getBooking(c.getName(),ce);
+                if (b != null) {
+                    newBookings.add(b);
+                }
+            }
+        }
+
+        assertEquals(culturalEvents, newCulturalEvents);
+        assertEquals(customers,newCustomers);
+        assertEquals(bookings, newBookings);
     }
 
 }

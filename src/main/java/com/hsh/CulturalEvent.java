@@ -1,10 +1,11 @@
 package com.hsh;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 
-public class CulturalEvent {
+public class CulturalEvent implements Serializable {
     private int id;
     private String title;
     private LocalDateTime  datetime;

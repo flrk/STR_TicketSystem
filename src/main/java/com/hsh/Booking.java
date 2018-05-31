@@ -1,8 +1,9 @@
 package com.hsh;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Booking {
+public class Booking implements Serializable {
     private Customer customer;
     private CulturalEvent culturalEvent;
     private int bookedSeats;

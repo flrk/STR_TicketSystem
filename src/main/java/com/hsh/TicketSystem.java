@@ -1,12 +1,13 @@
 package com.hsh;
 
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class TicketSystem {
-    private final HashMap<Integer,CulturalEvent> culturalEventMap;
-    private final HashMap<String,Customer> customerMap;
-    private final HashMap<String,Booking> bookingMap;
+    private HashMap<Integer,CulturalEvent> culturalEventMap;
+    private HashMap<String,Customer> customerMap;
+    private HashMap<String,Booking> bookingMap;
     private int culturalEventID;
 
     public TicketSystem(){
@@ -58,7 +59,52 @@ public class TicketSystem {
         return bookingMap.get(name+":"+culturalEvent.getEventID());
     }
 
+    public boolean saveAllData(){
+        boolean success = true;
+        success = save(customerMap,"customers");
+        success = save(bookingMap, "bookings");
+        success = save(culturalEventMap, "culturalEvents");
+
+        return success;
+    }
+
+    public void loadAllData(){
+        customerMap = loadHashMap("customers");
+        bookingMap = loadHashMap("bookings");
+        culturalEventMap = loadHashMap("culturalEvents");
+    }
+
+    private HashMap loadHashMap(String filename){
+        HashMap tmp = new HashMap();
+
+        try(FileInputStream fis = new FileInputStream("persistence/"+filename+".ser");
+        ObjectInputStream ois = new ObjectInputStream(fis)) {
+            tmp = (HashMap) ois.readObject();
+        }catch(Exception ioe){
+                ioe.printStackTrace();
+                return tmp;
+        }
+        return tmp;
+    }
+
+    private boolean save(Object objectToPersist, String filename){
+        try(FileOutputStream fos = new FileOutputStream("persistence/"+filename+".ser");
+            ObjectOutputStream oos = new ObjectOutputStream(fos) ){
+            oos.writeObject(objectToPersist);
+        }catch(IOException ioe){
+            ioe.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     private int getCulturalEventID(){
         return ++culturalEventID;
+    }
+
+    public void eraseTemporaryData() {
+        customerMap.clear();
+        bookingMap.clear();
+        culturalEventMap.clear();
     }
 }
