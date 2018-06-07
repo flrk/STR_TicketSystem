@@ -60,42 +60,55 @@ public class TicketSystem {
     }
 
     public boolean saveAllData(){
-        boolean success = true;
-        success = save(customerMap,"customers");
-        success = save(bookingMap, "bookings");
-        success = save(culturalEventMap, "culturalEvents");
+        try{
+            new CustomerRepository().saveAllCustomers(new LinkedList(customerMap.values()));
+            new BookingRepository().saveAllBookings(new LinkedList(bookingMap.values()));
+            new CulturalEventRepository().saveAllCulturalEvents(new LinkedList(culturalEventMap.values()));
 
-        return success;
-    }
-
-    public void loadAllData(){
-        customerMap = loadHashMap("customers");
-        bookingMap = loadHashMap("bookings");
-        culturalEventMap = loadHashMap("culturalEvents");
-    }
-
-    private HashMap loadHashMap(String filename){
-        HashMap tmp = new HashMap();
-
-        try(FileInputStream fis = new FileInputStream("persistence/"+filename+".ser");
-        ObjectInputStream ois = new ObjectInputStream(fis)) {
-            tmp = (HashMap) ois.readObject();
-        }catch(Exception ioe){
-                ioe.printStackTrace();
-                return tmp;
-        }
-        return tmp;
-    }
-
-    private boolean save(Object objectToPersist, String filename){
-        try(FileOutputStream fos = new FileOutputStream("persistence/"+filename+".ser");
-            ObjectOutputStream oos = new ObjectOutputStream(fos) ){
-            oos.writeObject(objectToPersist);
-        }catch(IOException ioe){
-            ioe.printStackTrace();
+        }catch(IOException ex){
+            ex.printStackTrace();
             return false;
         }
         return true;
+    }
+
+    public void loadAllData(){
+
+        try{
+            customerMap = convertCustomerCollectionToMap(new CustomerRepository().findAllCustomers());
+            bookingMap = convertBookingCollectionToMap(new BookingRepository().findAllBookings());
+            culturalEventMap = convertCulturalEventCollectionToMap(new CulturalEventRepository().findAllCulturalEvents());
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private HashMap<String, Customer> convertCustomerCollectionToMap(List<Customer> input){
+
+        HashMap<String,Customer> customers = new HashMap<>();
+        for (Customer c: input) {
+            customers.put(c.getName(), c);
+        }
+        return customers;
+    }
+
+    private HashMap<String, Booking> convertBookingCollectionToMap(List<Booking> input){
+
+        HashMap<String,Booking> bookings = new HashMap<>();
+        for (Booking b: input) {
+            bookings.put(b.getId(), b);
+        }
+        return bookings;
+    }
+
+    private HashMap<Integer, CulturalEvent> convertCulturalEventCollectionToMap(List<CulturalEvent> input){
+
+        HashMap<Integer,CulturalEvent> tmp = new HashMap<>();
+        for (CulturalEvent ce: input) {
+            tmp.put(ce.getEventID(), ce);
+        }
+        return tmp;
     }
 
     private int getCulturalEventID(){

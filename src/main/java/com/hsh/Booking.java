@@ -53,6 +53,10 @@ public class Booking implements Serializable {
 
     }
 
+    String getId(){
+        return customer.getName()+":"+culturalEvent.getEventID();
+    }
+
     int getBookedSeats(){
         return bookedSeats;
     }
