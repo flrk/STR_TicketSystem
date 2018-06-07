@@ -5,16 +5,18 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class TicketSystem {
+    private BlacklistService bs;
     private HashMap<Integer,CulturalEvent> culturalEventMap;
     private HashMap<String,Customer> customerMap;
     private HashMap<String,Booking> bookingMap;
     private int culturalEventID;
 
-    public TicketSystem(){
-       culturalEventMap = new HashMap<>();
-       customerMap = new HashMap<>();
-       bookingMap = new HashMap<>();
-       culturalEventID = 0;
+    public TicketSystem(BlacklistService bs){
+        this.bs = bs;
+        culturalEventMap = new HashMap<>();
+        customerMap = new HashMap<>();
+        bookingMap = new HashMap<>();
+        culturalEventID = 0;
     }
 
     public void createNewCustomer(String name, String address){
@@ -36,10 +38,13 @@ public class TicketSystem {
         return culturalEventMap.get(id).getRemainingSeats();
     }
 
-    public void createNewBookingForCustomer(String name, CulturalEvent culturalEvent, int bookedSeats){
+    public void createNewBookingForCustomer(String name, CulturalEvent culturalEvent, int bookedSeats) throws CustomerRejectedException {
         Customer requestedCustomer = customerMap.get(name);
         if(requestedCustomer == null){
             throw new NoSuchElementException();
+        }
+        if(bs.isCustomerOnBlacklist(requestedCustomer)){
+            throw new CustomerRejectedException("Dem kunden sind keine Buchungen erlaubt");
         }
         if(culturalEvent.getRemainingSeats()< bookedSeats){
             throw new IllegalArgumentException("Nicht genug freie Plätze");
