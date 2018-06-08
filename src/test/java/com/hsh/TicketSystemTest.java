@@ -17,18 +17,32 @@ public class TicketSystemTest {
     private TicketSystem system;
     private Customer customer;
     private CulturalEvent culturalEvent;
+    private String customerName;
+    private int bookedSeats;
 
     @BeforeEach
     void init(){
+
         customer = new Customer("Hans Meier", "Zechenweg 7, 30499 Hannover");
         customerOnBlacklist = new Customer("Evil Twin", "Blacklist 7, 66666 Blacklisthausen");
+        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        customerName = customer.getName();
+        bookedSeats = 2;
+
+        //Inject BlacklistService as MockObjekt into the Ticketservice
         BlacklistService bs = Mockito.mock(BlacklistService.class);
         Mockito.when(bs.isCustomerOnBlacklist(customerOnBlacklist)).thenReturn(true);
         system = new TicketSystem(bs);
+
+        //Create some example Customers
         system.createNewCustomer("Evil Twin", "Blacklist 7, 66666 Blacklisthausen");
         system.createNewCustomer("Hans Meier", "Zechenweg 7, 30499 Hannover");
+        system.createNewCustomer("Hans Mayer", "Blabal Str. 4, 99999 Nonsenshausen");
+        system.createNewCustomer("Hans Müller", "TickTack Str. 4, 99999 Nonsenshausen");
+
+        //Create example CulturalEvents
         system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
-        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        system.createNewCulturalEvent("Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000);
     }
 
     @Test
@@ -52,8 +66,6 @@ public class TicketSystemTest {
         listToCompare.add(new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000));
         listToCompare.add(new CulturalEvent(2,"Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000));
 
-        system.createNewCulturalEvent("Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000);
-
         List<CulturalEvent> culturalEventList = system.listAllCulturalEvents();
 
         assertTrue(culturalEventList.equals(listToCompare));
@@ -67,9 +79,6 @@ public class TicketSystemTest {
         listToCompare.add(new Customer("Hans Mayer", "Blabal Str. 4, 99999 Nonsenshausen"));
         listToCompare.add(new Customer("Hans Müller", "TickTack Str. 4, 99999 Nonsenshausen"));
 
-        system.createNewCustomer("Hans Mayer", "Blabal Str. 4, 99999 Nonsenshausen");
-        system.createNewCustomer("Hans Müller", "TickTack Str. 4, 99999 Nonsenshausen");
-
         List<Customer> customerList = system.listAllCustomers();
 
         assertTrue(customerList.equals(listToCompare));
@@ -78,17 +87,14 @@ public class TicketSystemTest {
 
     @Test
     void shouldListRemainingSeatsForGivenCulturalEvent(){
-        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
-
         int remainingSeats = system.getRemainingSeatsForCulturalEvent(1);
         assertEquals(20_000, remainingSeats);
-
     }
 
     @Test
     void shouldCreateNewBookingForStoredCustomer(){
         try {
-            system.createNewBookingForCustomer("Hans Meier", culturalEvent,2);
+            system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
             e.printStackTrace();
         }
@@ -96,42 +102,45 @@ public class TicketSystemTest {
 
     @Test
     void shouldRejectCreationNewBookingForUnstoredCustomer() {
-        assertThrows(NoSuchElementException.class, () -> system.createNewBookingForCustomer("Hans Müller", culturalEvent, 2));
+        assertThrows(NoSuchElementException.class, () -> system.createNewBookingForCustomer("Max Mustermann", culturalEvent, bookedSeats));
     }
 
     @Test
     void shouldMergeBookingForSameCulturalEventAndCustomer(){
-        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        int expectedSeats = bookedSeats + bookedSeats;
+
         try {
-            system.createNewBookingForCustomer("Hans Meier",culturalEvent,2);
-            system.createNewBookingForCustomer("Hans Meier", culturalEvent, 2);
+            system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
+            system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
             e.printStackTrace();
         }
 
-        Booking storedBooking = system.getBooking("Hans Meier", culturalEvent);
-        assertEquals(4, storedBooking.getBookedSeats());
+        Booking storedBooking = system.getBooking(customerName, culturalEvent);
+        assertEquals(expectedSeats, storedBooking.getBookedSeats());
     }
 
     @Test
     void shouldReturnBookingForCustomerAndCulturalEvent(){
-        Booking booking = new Booking(customer,culturalEvent,2);
+        Booking expectedBooking = new Booking(customer, culturalEvent, bookedSeats);
         try {
-            system.createNewBookingForCustomer("Hans Meier",culturalEvent,2);
+            system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
             e.printStackTrace();
         }
-        assertEquals(booking, system.getBooking("Hans Meier",culturalEvent));
+        assertEquals(expectedBooking, system.getBooking(customerName, culturalEvent));
     }
 
     @Test
     void shouldRejectBookingIfNotEnoughSeatsAvailable(){
+        int firstBookedSeats = 19_000;
+        int secondBookedSeats = 1_001;
         try {
-            system.createNewBookingForCustomer("Hans Meier",culturalEvent,19_000);
+            system.createNewBookingForCustomer(customerName, culturalEvent, firstBookedSeats);
         } catch (CustomerRejectedException e) {
             e.printStackTrace();
         }
-        assertThrows(IllegalArgumentException.class, () -> system.createNewBookingForCustomer("Hans Meier", culturalEvent, 1_001));
+        assertThrows(IllegalArgumentException.class, () -> system.createNewBookingForCustomer(customerName, culturalEvent, secondBookedSeats));
     }
 
     @Test
@@ -141,14 +150,13 @@ public class TicketSystemTest {
 
     @Test
     void shouldRejectBookingIfCustomerIsOnBlacklist(){
-
-        assertThrows(CustomerRejectedException.class, () -> system.createNewBookingForCustomer(customerOnBlacklist.getName(),culturalEvent, 2));
+        assertThrows(CustomerRejectedException.class, () -> system.createNewBookingForCustomer(customerOnBlacklist.getName(), culturalEvent, bookedSeats));
     }
 
     @Test
     void shouldLoadAllSavedData(){
         try {
-            system.createNewBookingForCustomer("Hans Meier",culturalEvent,2);
+            system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
             e.printStackTrace();
         }
@@ -183,7 +191,7 @@ public class TicketSystemTest {
         }
 
         assertEquals(culturalEvents, newCulturalEvents);
-        assertEquals(customers,newCustomers);
+        assertEquals(customers, newCustomers);
         assertEquals(bookings, newBookings);
     }
 
