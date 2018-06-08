@@ -14,7 +14,7 @@ public class CulturalEventTest {
     @BeforeEach
     void init(){
         seats = 20_000;
-        event = new CulturalEvent(1,"Metallica Konzert",LocalDateTime.of(2018, Month.MARCH, 28, 19, 30),98, seats);
+        event = new CulturalEvent(1,"Metallica Konzert",LocalDateTime.of(2018, Month.MARCH, 28, 19, 30),98, seats, "info@promoter.de");
     }
 
     @Test

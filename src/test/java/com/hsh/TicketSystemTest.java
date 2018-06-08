@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class TicketSystemTest {
     private Customer customerOnBlacklist;
@@ -19,20 +21,25 @@ public class TicketSystemTest {
     private CulturalEvent culturalEvent;
     private String customerName;
     private int bookedSeats;
+    private String promoterEmail;
+    private MailService mailService;
 
     @BeforeEach
     void init(){
-
+        promoterEmail = "Info@promoter.de";
         customer = new Customer("Hans Meier", "Zechenweg 7, 30499 Hannover");
         customerOnBlacklist = new Customer("Evil Twin", "Blacklist 7, 66666 Blacklisthausen");
-        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000, promoterEmail);
         customerName = customer.getName();
         bookedSeats = 2;
+
+        mailService = Mockito.mock(MailService.class);
 
         //Inject BlacklistService as MockObjekt into the Ticketservice
         BlacklistService bs = Mockito.mock(BlacklistService.class);
         Mockito.when(bs.isCustomerOnBlacklist(customerOnBlacklist)).thenReturn(true);
-        system = new TicketSystem(bs);
+
+        system = new TicketSystem(bs, mailService);
 
         //Create some example Customers
         system.createNewCustomer("Evil Twin", "Blacklist 7, 66666 Blacklisthausen");
@@ -41,8 +48,8 @@ public class TicketSystemTest {
         system.createNewCustomer("Hans Müller", "TickTack Str. 4, 99999 Nonsenshausen");
 
         //Create example CulturalEvents
-        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
-        system.createNewCulturalEvent("Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000);
+        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000, promoterEmail);
+        system.createNewCulturalEvent("Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000, promoterEmail);
     }
 
     @Test
@@ -57,14 +64,14 @@ public class TicketSystemTest {
 
     @Test
     void shouldCreateNewCulturalEvent(){
-        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        system.createNewCulturalEvent("Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000, promoterEmail);
     }
 
     @Test
     void shouldListAllCulturalEvents(){
         LinkedList<CulturalEvent> listToCompare = new LinkedList<>();
-        listToCompare.add(new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000));
-        listToCompare.add(new CulturalEvent(2,"Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000));
+        listToCompare.add(new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000, promoterEmail));
+        listToCompare.add(new CulturalEvent(2,"Der Ring der Niebelung", LocalDateTime.of(2018, Month.MARCH, 15, 19, 30), 24, 2_000, promoterEmail));
 
         List<CulturalEvent> culturalEventList = system.listAllCulturalEvents();
 
@@ -151,6 +158,19 @@ public class TicketSystemTest {
     @Test
     void shouldRejectBookingIfCustomerIsOnBlacklist(){
         assertThrows(CustomerRejectedException.class, () -> system.createNewBookingForCustomer(customerOnBlacklist.getName(), culturalEvent, bookedSeats));
+    }
+
+    @Test
+    void shouldSendMailToPromoterIfMoreThan10PercentOfSeatsWhereBooked(){
+        int booking10PercentOfSeats = (int)(culturalEvent.getRemainingSeats()*0.11);
+        
+        try {
+            system.createNewBookingForCustomer(customerName, culturalEvent, booking10PercentOfSeats);
+        } catch (CustomerRejectedException e) {
+            e.printStackTrace();
+        }
+
+        verify(mailService, times(1)).sendMailToPromoter(culturalEvent.getPromotersEmail());
     }
 
     @Test

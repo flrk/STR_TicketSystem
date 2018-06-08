@@ -13,7 +13,7 @@ public class BookingTest {
     @BeforeEach
     void init(){
         customer = new Customer("Hans Meier", "Zeppelinweg 7, 3049 Hannover");
-        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000);
+        culturalEvent = new CulturalEvent(1,"Metallica Konzert", LocalDateTime.of(2018, Month.MARCH, 28, 19, 30), 98.54, 20_000, "info@promoter.de");
         bookedSeats = 2;
     }
 

@@ -12,28 +12,36 @@ public class CulturalEvent implements Serializable {
     private double price;
     private int numberOfSeats;
     private int remainingSeats;
+    private String email;
 
 
-    public CulturalEvent(int id, String title, LocalDateTime dateTime, double price, int numberOfSeats){
+    public CulturalEvent(int id, String title, LocalDateTime dateTime, double price, int numberOfSeats, String email){
         this.id = id;
         this.title = title;
         this.datetime = dateTime;
         this.price = price;
         this.numberOfSeats = numberOfSeats;
         this.remainingSeats = numberOfSeats;
+        this.email = email;
     }
 
-    public int getEventID(){
+    int getEventID(){
         return id;
     }
 
-    public void decreaseRemainingSeats(int numberOfSeats){
+    void decreaseRemainingSeats(int numberOfSeats){
         remainingSeats -= numberOfSeats;
     }
 
-    public int getRemainingSeats(){
+    int getRemainingSeats(){
         return remainingSeats;
     }
+
+    String getPromotersEmail(){
+        return email;
+    }
+
+    int getPercentOfBookedSeats(int bookedSeats) { return bookedSeats / (numberOfSeats/100);}
 
     @Override
     public boolean equals(Object o) {

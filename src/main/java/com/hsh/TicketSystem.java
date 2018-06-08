@@ -5,14 +5,16 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class TicketSystem {
-    private BlacklistService bs;
+    private final BlacklistService bs;
+    private final MailService ms;
     private HashMap<Integer,CulturalEvent> culturalEventMap;
     private HashMap<String,Customer> customerMap;
     private HashMap<String,Booking> bookingMap;
     private int culturalEventID;
 
-    public TicketSystem(BlacklistService bs){
+    public TicketSystem(BlacklistService bs, MailService ms){
         this.bs = bs;
+        this.ms = ms;
         culturalEventMap = new HashMap<>();
         customerMap = new HashMap<>();
         bookingMap = new HashMap<>();
@@ -23,9 +25,9 @@ public class TicketSystem {
         customerMap.put(name, new Customer(name, address));
     }
 
-    public void createNewCulturalEvent(String name, LocalDateTime dateTime, double price, int totalNumberOfSeats){
+    public void createNewCulturalEvent(String name, LocalDateTime dateTime, double price, int totalNumberOfSeats, String email){
         int culturalEventID = getCulturalEventID();
-        culturalEventMap.put(culturalEventID,new CulturalEvent(culturalEventID,name,dateTime,price,totalNumberOfSeats));
+        culturalEventMap.put(culturalEventID,new CulturalEvent(culturalEventID,name,dateTime,price,totalNumberOfSeats, email));
     }
 
     public List<CulturalEvent> listAllCulturalEvents(){
@@ -43,14 +45,20 @@ public class TicketSystem {
         if(requestedCustomer == null){
             throw new NoSuchElementException();
         }
+
         if(bs.isCustomerOnBlacklist(requestedCustomer)){
-            throw new CustomerRejectedException("Dem kunden sind keine Buchungen erlaubt");
+            throw new CustomerRejectedException("Dem Kunden sind keine Buchungen erlaubt");
         }
-        if(culturalEvent.getRemainingSeats()< bookedSeats){
+
+        if(culturalEvent.getRemainingSeats() < bookedSeats){
             throw new IllegalArgumentException("Nicht genug freie Plätze");
         }
 
         culturalEvent.decreaseRemainingSeats(bookedSeats);
+
+        if(culturalEvent.getPercentOfBookedSeats(bookedSeats) >= 10){
+            ms.sendMailToPromoter(culturalEvent.getPromotersEmail());
+        }
 
         int alreadyBookedSeats = 0;
         if(bookingMap.containsKey(name+":"+culturalEvent.getEventID())){
