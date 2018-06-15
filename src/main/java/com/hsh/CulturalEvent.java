@@ -60,9 +60,4 @@ public class CulturalEvent implements Serializable {
 
         return Objects.hash(id, title, datetime, price, numberOfSeats);
     }
-
-    @Override
-    public String toString(){
-        return "ID "+id+" : "+title+" am "+datetime.toLocalDate()+" um "+datetime.toLocalTime();
-    }
 }

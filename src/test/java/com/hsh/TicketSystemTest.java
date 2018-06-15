@@ -100,11 +100,14 @@ public class TicketSystemTest {
 
     @Test
     void shouldCreateNewBookingForStoredCustomer(){
+        Booking expectedBooking = new Booking(customer, culturalEvent, bookedSeats);
         try {
             system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
-            e.printStackTrace();
+            fail("Exception geworfen");
         }
+        assertEquals(expectedBooking, system.getBooking(customerName, culturalEvent));
+
     }
 
     @Test
@@ -120,7 +123,7 @@ public class TicketSystemTest {
             system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
             system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
-            e.printStackTrace();
+            fail("Exception geworfen");
         }
 
         Booking storedBooking = system.getBooking(customerName, culturalEvent);
@@ -133,7 +136,7 @@ public class TicketSystemTest {
         try {
             system.createNewBookingForCustomer(customerName, culturalEvent, bookedSeats);
         } catch (CustomerRejectedException e) {
-            e.printStackTrace();
+            fail("Exception geworfen");
         }
         assertEquals(expectedBooking, system.getBooking(customerName, culturalEvent));
     }
@@ -145,7 +148,7 @@ public class TicketSystemTest {
         try {
             system.createNewBookingForCustomer(customerName, culturalEvent, firstBookedSeats);
         } catch (CustomerRejectedException e) {
-            e.printStackTrace();
+            fail("Exception geworfen");
         }
         assertThrows(IllegalArgumentException.class, () -> system.createNewBookingForCustomer(customerName, culturalEvent, secondBookedSeats));
     }
@@ -163,11 +166,11 @@ public class TicketSystemTest {
     @Test
     void shouldSendMailToPromoterIfMoreThan10PercentOfSeatsWhereBooked(){
         int booking10PercentOfSeats = (int)(culturalEvent.getRemainingSeats()*0.11);
-        
+
         try {
             system.createNewBookingForCustomer(customerName, culturalEvent, booking10PercentOfSeats);
         } catch (CustomerRejectedException e) {
-            e.printStackTrace();
+            fail("Exception geworfen");
         }
 
         verify(mailService, times(1)).sendMailToPromoter(culturalEvent.getPromotersEmail());

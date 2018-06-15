@@ -39,8 +39,9 @@ public class BookingTest {
     }
 
     @Test
-    void getBookedSeats(){
+    void shouldGetBookedSeats(){
         Booking booking = new Booking(customer, culturalEvent, bookedSeats);
         assertEquals(bookedSeats, booking.getBookedSeats());
     }
 }
+
